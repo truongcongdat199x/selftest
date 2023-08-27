@@ -1,1 +1,2 @@
-# selftest
+# Training
+Training myself

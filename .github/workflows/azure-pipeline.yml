@@ -1,0 +1,193 @@
+name: GitHub Action testing by dattc
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+      - "devops"
+
+# on:
+#   push:
+#     branches: [ "main" ]
+#   pull_request:
+#     branches: [ "main" ]
+env:
+    Pass: '10-Aug-2023'
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # - name: Login to ACR
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: acrshiokaze.azurecr.io
+      #     username: ${{ secrets.AZURE_CLIENT_ID }}
+      #     password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      # - name: check default variable
+      #   run: |
+      #     docker pull alpine
+      #     docker tag alpine:latest acrshiokaze.azurecr.io/test/abc:job1
+      #     docker push acrshiokaze.azurecr.io/test/abc:job1
+
+  build:
+      env:
+          To_DAY: '24-Aug-2023'
+      # runs-on: ubuntu-latest
+      runs-on: dattc-runner
+      steps:
+          - name: Print name
+            run: echo ${{ vars.FULLNAME}}
+
+          - shell: bash
+            run: |
+              echo "my name is ${{ vars.MY_NAME }}"
+          - name: Print date
+            run: echo "hien tai dang la $BUILD. $To_DAY"
+            env:
+              BUILD: 'buoi chieu'
+      # needs: [job1, job2]
+      needs: [job1]
+
+  deploy:
+      # runs-on: ubuntu-latest
+      runs-on: pod-runner
+      steps:
+          - name: check default variable
+            run: |
+              echo "commit id is $GITHUB_SHA" # This will print commid id
+              echo "print secret value: ${{ secrets.AZURE_CLIENT_SECRET }}" # This will print ***
+              echo "checking ::add-mask::$Pass"  # checking ::add-mask::10-Aug-2023
+              # echo ${{secrets.AZURE_CLIENT_SECRET}} | sed 's/./& /g'
+              pwd
+
+          - name: Setup kubectl
+            id: install-kubectl
+            uses: azure/setup-kubectl@v3
+          
+          - name: get namespace still fail :(
+            run: |
+              # echo ${{ vars.AKS }} > /home/runner/.kube/config
+              # echo ${{ vars.AKS }} > /home/.kube/config
+              echo -n ${{ vars.AKS }} | base64 -d > $HOME/.kube/config
+              echo -n ${{ vars.AKS }} | base64 -d > $HOME/runner/.kube/config
+              kubectl get no
+          - uses: tale/kubectl-action@v1
+            with:
+              base64-kube-config: ${{ secrets.AKS }}
+          - run: |
+              kubectl get ns
+              kubectl get no 
+          - uses: actions-hub/kubectl@master
+            env:
+              KUBE_CONFIG: ${{ secrets.AKS }}
+            with:
+              args: | 
+                get pods
+                get no
+  # notify:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - name: Google Chat Notification
+  #     uses: Co-qn/google-chat-notification@releases/v1
+  #     with:
+  #       name: Build
+  #       url: ${{ secrets.GG_CHAT }}
+  #       status: ${{ job.status }}
+  #     if: always()
+  #   - name: Git Issue Details
+  #     run: |
+  #         echo "Issue creator: ${{ github.event.issue.user.login }}"
+  #         echo "Issue title: ${{ github.event.issue.title }}"
+  #         echo "Issue number: ${{ github.event.issue.number }}"
+  #         echo "Issue url: ${{ github.event.issue.html_url }}"
+  #         echo "Issue body: ${{ github.event.issue.body }}"
+  #         echo "Assigned labels: " ${{ join(github.event.issue.labels.*.name) }}
+  #         echo "Assignees: " ${{ join(github.event.issue.assignees.*.login) }}
+  #   - name: Google Chat Notification
+      # run: |
+      #     curl --location --request POST '${{ secrets.GG_CHAT }}' \
+      #     --header 'Content-Type: application/json' \
+      #     --data-raw '{
+      #         "cardsV2": [
+      #           {
+      #             "cardId": "unique-card-id",
+      #             "card": {
+      #               "header": {
+      #                 "title": "Sasha",
+      #                 "subtitle": "Software Engineer",
+      #                 "imageUrl":
+      #                 "https://developers.google.com/chat/images/quickstart-app-avatar.png",
+      #                 "imageType": "SQUARE",
+      #                 "imageAltText": "Avatar for Sasha",
+      #               },
+      #               "sections": [
+      #                 {
+      #                   "header": "Contact Info",
+      #                   "collapsible": true,
+      #                   "uncollapsibleWidgetsCount": 1,
+      #                   "widgets": [
+      #                     {
+      #                       "decoratedText": {
+      #                         "startIcon": {
+      #                           "knownIcon": "EMAIL",
+      #                         },
+      #                         "text": "sasha@example.com",
+      #                       }
+      #                     },
+      #                     {
+      #                       "decoratedText": {
+      #                         "startIcon": {
+      #                           "knownIcon": "PERSON",
+      #                         },
+      #                         "text": "<font color=\"#80e27e\">Online</font>",
+      #                       },
+      #                     },
+      #                     {
+      #                       "decoratedText": {
+      #                         "startIcon": {
+      #                           "knownIcon": "PHONE",
+      #                         },
+      #                         "text": "+1 (555) 555-1234",
+      #                       }
+      #                     },
+      #                     {
+      #                       "buttonList": {
+      #                         "buttons": [
+      #                           {
+      #                             "text": "Share",
+      #                             "onClick": {
+      #                               "openLink": {
+      #                                 "url": "https://example.com/share",
+      #                               }
+      #                             }
+      #                           },
+      #                           {
+      #                             "text": "Edit",
+      #                             "onClick": {
+      #                               "action": {
+      #                                 "function": "goToView",
+      #                                 "parameters": [
+      #                                   {
+      #                                     "key": "viewType",
+      #                                     "value": "EDIT",
+      #                                   }
+      #                                 ],
+      #                               }
+      #                             }
+      #                           },
+      #                         ],
+      #                       }
+      #                     },
+      #                   ],
+      #                 },
+      #               ],
+      #             },
+      #           }
+      #         ]
+      #     }'
