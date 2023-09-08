@@ -63,5 +63,4 @@ jobs:
       - name: Deploy image to Amazon EKS
         run: |
           kubectl get ns
-          kubectl get no
           kubectl create deployment source-ip-app --image=registry.k8s.io/echoserver:1.4
