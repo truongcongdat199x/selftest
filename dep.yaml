@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        # image: 910760619310.dkr.ecr.ap-northeast-1.amazonaws.com/demoapp:56b84f6639daea6f6ab3499e1ce9b9deb128cdc5
+        image: 910760619310.dkr.ecr.ap-northeast-1.amazonaws.com/aki-stg-repo:001
+        ports:
+        - containerPort: 80

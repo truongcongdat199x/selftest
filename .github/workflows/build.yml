@@ -22,24 +22,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # - name: Configure AWS credentials  # Need test v2 and note
-      #   uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
-      #   with:
-      #     role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
-      #     aws-region: ap-northeast-1
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1  #v1 test done but it show warning, need to test v2
+      - name: Configure AWS credentials  # Need test v2 and note
+        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::910760619310:role/gh-actions-role
           aws-region: ap-northeast-1
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v1  #v1 test done but it show warning, need to test v2
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ap-northeast-1
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: 'true'
-          
-      - name: Load secrets and save to app.env
+
+      - name: Load secrets and save to app.env #test ok
         run: aws secretsmanager get-secret-value --secret-id pro/test --query SecretString --output text | jq -r 'to_entries|map("\(.key)=\(.value)")|.[]' > .env
 
       - name: Build, tag, and push docker image to Amazon ECR
