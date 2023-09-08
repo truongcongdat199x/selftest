@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials  # Need test v2 and note
-        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
+        uses: aws-actions/configure-aws-credentials@v3 # More information on this action can be found below in the 'AWS Credentials' section
         with:
           role-to-assume: arn:aws:iam::910760619310:role/gh-actions-role
           aws-region: ap-northeast-1
